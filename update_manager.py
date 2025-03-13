@@ -1,20 +1,23 @@
 import json
+import subprocess
 import requests
 import os
 from zipfile import ZipFile
 
 VERSION = "1.0.0"
-REPO_RELEASES = "https://api.github.com/TurtlePrograms/Turtle-Tools/releases/latest"
 
 def check_for_updates():
     """Check GitHub for the latest release and update if needed."""
     try:
-        response = requests.get(REPO_RELEASES).json()
-        latest_version = response["tag_name"]
-
+        #use gh cli to get the latest release
+        response = subprocess.run(["gh", "release", "list","--exclude-drafts","--exclude-pre-releases","--json","isLatest,name,tagName"], capture_output=True).stdout.decode("utf-8")
+        response = json.loads(response)[0]
+        print(response)
+        latest_version = response["tagName"]
         if latest_version > VERSION:
             print(f"New version available: {latest_version}. Updating...")
-            download_url = response["assets"][0]["browser_download_url"]
+            # Get the download URL for the latest release
+            download_url = f"https://github.com/TurtlePrograms/Turtle-Tools/archive/refs/tags/{latest_version}.zip"
             update_tool(download_url)
         else:
             print("Turtles Tools is up to date!")
